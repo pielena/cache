@@ -1,6 +1,8 @@
 package ru.otus.crm.service;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.otus.base.AbstractHibernateTest;
 import ru.otus.cachehw.MyCache;
 import ru.otus.crm.model.Address;
@@ -13,10 +15,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DbServiceClientCacheTest extends AbstractHibernateTest {
+    private static final Logger log = LoggerFactory.getLogger(DbServiceClientCacheTest.class);
 
     @Test
     public void shouldBeFasterWithCache() {
-
         DBServiceClient dbServiceClientBare = new DbServiceClientImpl(transactionManager, clientTemplate, null);
         List<Long> ids = addTestData(dbServiceClientBare);
         long withoutCacheTime = measureTime(dbServiceClientBare, ids);
@@ -25,8 +27,8 @@ class DbServiceClientCacheTest extends AbstractHibernateTest {
         ids = addTestData(dbServiceClientCached);
         long withCacheTime = measureTime(dbServiceClientCached, ids);
 
-        System.out.println("time without cache " + withoutCacheTime);
-        System.out.println("time with cache " + withCacheTime);
+        log.info("time without cache: {}", withoutCacheTime);
+        log.info("time with cache: {}", withCacheTime);
 
         assertThat(withoutCacheTime).isGreaterThan(withCacheTime);
     }
@@ -50,7 +52,7 @@ class DbServiceClientCacheTest extends AbstractHibernateTest {
             }
         }
 
-        System.out.println("Cache was cleared " + (iteration-1) + "times");
+        log.info("Cache was cleared {} times", iteration-1);
         assertThat(iteration).isGreaterThan(1);
     }
 
@@ -73,5 +75,4 @@ class DbServiceClientCacheTest extends AbstractHibernateTest {
         long end = System.currentTimeMillis();
         return end - start;
     }
-
 }
